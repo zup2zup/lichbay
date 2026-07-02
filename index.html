@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra Cứu Lịch Bay</title>
+    <!-- Tích hợp thư viện lịch Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .form-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { text-align: center; color: #1a73e8; margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; background-color: #fff; }
+        input:focus { border-color: #1a73e8; outline: none; }
+        button { width: 100%; padding: 12px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #1557b0; }
+        .result-box { margin-top: 20px; padding: 15px; border-radius: 4px; display: none; text-align: center; font-size: 15px; }
+        .success { background-color: #e6f4ea; color: #137333; border: 1px solid #ceead6; }
+        .error { background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; }
+        .time-highlight { font-size: 18px; font-weight: bold; color: #1a73e8; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Tra cứu Lịch bay</h2>
+    <form id="searchForm">
+        <div class="form-group">
+            <label>Số hiệu chuyến bay (SHCB)</label>
+            <input type="text" id="shcb" placeholder="Ví dụ: 101" required>
+        </div>
+        <div class="form-group">
+            <label>Ngày bay (dd/mm/yyyy)</label>
+            <!-- Sử dụng type="text" để ép hiển thị chữ và cho gõ đúng định dạng -->
+            <input type="text" id="ngay" placeholder="Chọn hoặc gõ dd/mm/yyyy" required>
+        </div>
+        <div class="form-group">
+            <label>Chặng bay</label>
+            <input type="text" id="chang" placeholder="Ví dụ: HANDAD" required>
+        </div>
+        <button type="submit" id="btnSubmit">Tìm kiếm</button>
+    </form>
+
+    <div id="result" class="result-box"></div>
+</div>
+
+<!-- Nhúng Javascript hỗ trợ tạo bảng lịch chọn ngày -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
+
+<script>
+    // 1. Khởi tạo bảng lịch thông minh ép chuẩn định dạng dd/mm/yyyy
+    flatpickr("#ngay", {
+        dateFormat: "d/m/Y", // Định dạng hiển thị và xuất ra dữ liệu là dd/mm/yyyy
+        allowInput: true,    // Cho phép khách tự gõ từ bàn phím thay vì bắt buộc chọn
+        locale: "vn"         // Đổi ngôn ngữ bảng lịch sang Tiếng Việt
+    });
+
+    // DÁN ĐƯỜNG LINK WEB APP URL MỚI CỦA BẠN VÀO ĐÂY
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxZRvQvrQMWNuvOz6GDmdGFYxkUWYnt1lqgsvHJBQpT-8CaLPF5Z3F2s7UfouBmWWjp/exec";
+
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('btnSubmit');
+        const resultBox = document.getElementById('result');
+        
+        btn.disabled = true;
+        btn.innerText = "Đang tìm kiếm...";
+        resultBox.style.display = "none";
+
+        // Lấy trực tiếp chuỗi ngày dd/mm/yyyy do Flatpickr đã chuẩn hóa sẵn
+        const formattedDate = document.getElementById('ngay').value.trim();
+        const shcb = document.getElementById('shcb').value.trim();
+        const chang = document.getElementById('chang').value.trim();
+
+        const apiUrl = `${WEB_APP_URL}?shcb=${encodeURIComponent(shcb)}&ngay=${encodeURIComponent(formattedDate)}&chang=${encodeURIComponent(chang)}`;
+
+        fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerText = "Tìm kiếm";
+            resultBox.style.display = "block";
+
+            if (data.status === "success") {
+                resultBox.className = "result-box success";
+                resultBox.innerHTML = `
+                    <p>Chuyến bay <b>${data.shcb}</b> ngày ${data.ngay} (${data.chang})</p>
+                    <hr style="border: 0; border-top: 1px solid #ceead6; margin: 10px 0;">
+                    <p>🛫 Giờ đi: <span class="time-highlight">${data.gioDi}</span></p>
+                    <p>🛬 Giờ đến: <span class="time-highlight">${data.gioDen}</span></p>
+                `;
+            } else {
+                resultBox.className = "result-box error";
+                resultBox.innerText = data.message || "Đã có lỗi xảy ra.";
+            }
+        })
+        .catch(error => {
+            btn.disabled = false;
+            btn.innerText = "Tìm kiếm";
+            resultBox.style.display = "block";
+            resultBox.className = "result-box error";
+            resultBox.innerText = "Lỗi kết nối đến máy chủ. Vui lòng kiểm tra lại cấu hình Web App.";
+            console.error(error);
+        });
+    });
+</script>
+
+</body>
+</html>
