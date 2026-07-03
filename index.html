@@ -20,6 +20,8 @@
         .success { background-color: #e6f4ea; color: #137333; border: 1px solid #ceead6; }
         .error { background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; }
         .time-highlight { font-size: 18px; font-weight: bold; color: #1a73e8; }
+        /* Style cho dòng chữ nhỏ thông báo cập nhật dữ liệu */
+        .update-note { font-size: 12px; color: #666; font-style: italic; margin-top: 12px; display: block; }
     </style>
 </head>
 <body>
@@ -86,12 +88,19 @@
             resultBox.style.display = "block";
 
             if (data.status === "success") {
+                // Tạo chuỗi thông tin ngày giờ cập nhật nếu có dữ liệu trong database
+                let updateString = "";
+                if (data.ngayCapNhat || data.gioCapNhat) {
+                    updateString = `<span class="update-note">Dữ liệu được cập nhật lúc: ${data.gioCapNhat} - ngày ${data.ngayCapNhat}</span>`;
+                }
+
                 resultBox.className = "result-box success";
                 resultBox.innerHTML = `
                     <p>Chuyến bay <b>QH</b><b>${data.shcb}</b> ngày ${data.ngay} (${data.chang})</p>
                     <hr style="border: 0; border-top: 1px solid #ceead6; margin: 10px 0;">
                     <p>🛫 Giờ đi: <span class="time-highlight">${data.gioDi}</span></p>
                     <p>🛬 Giờ đến: <span class="time-highlight">${data.gioDen}</span></p>
+                    ${updateString}
                 `;
             } else {
                 resultBox.className = "result-box error";
