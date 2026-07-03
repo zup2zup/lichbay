@@ -29,15 +29,18 @@
 <div class="form-container">
     <h2>Tra cứu Lịch bay</h2>
     <form id="searchForm">
+        <!-- ĐÃ ĐẢO: Ngày bay được đưa lên vị trí đầu tiên -->
+        <div class="form-group">
+            <label>Ngày bay (dd/mm/yyyy)</label>
+            <input type="text" id="ngay" placeholder="Chọn hoặc gõ dd/mm/yyyy" required>
+        </div>
+
+        <!-- Số hiệu chuyến bay (SHCB) chuyển xuống vị trí thứ hai -->
         <div class="form-group">
             <label>Số hiệu chuyến bay (SHCB)</label>
             <input type="text" id="shcb" placeholder="Ví dụ: 101" required>
         </div>
-        <div class="form-group">
-            <label>Ngày bay (dd/mm/yyyy)</label>
-            <!-- Sử dụng type="text" để ép hiển thị chữ và cho gõ đúng định dạng -->
-            <input type="text" id="ngay" placeholder="Chọn hoặc gõ dd/mm/yyyy" required>
-        </div>
+
         <div class="form-group">
             <label>Chặng bay</label>
             <input type="text" id="chang" placeholder="Ví dụ: HANDAD" required>
@@ -60,7 +63,7 @@
         locale: "vn"         // Đổi ngôn ngữ bảng lịch sang Tiếng Việt
     });
 
-    // DÁN ĐƯỜNG LINK WEB APP URL MỚI CỦA BẠN VÀO ĐÂY
+    // DÁN ĐƯỜNG LINK WEB APP URL CỦA BẠN VÀO ĐÂY
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxZRvQvrQMWNuvOz6GDmdGFYxkUWYnt1lqgsvHJBQpT-8CaLPF5Z3F2s7UfouBmWWjp/exec";
 
     document.getElementById('searchForm').addEventListener('submit', function(e) {
@@ -73,7 +76,7 @@
         btn.innerText = "Đang tìm kiếm...";
         resultBox.style.display = "none";
 
-        // Lấy trực tiếp chuỗi ngày dd/mm/yyyy do Flatpickr đã chuẩn hóa sẵn
+        // Lấy dữ liệu đầu vào từ form
         const formattedDate = document.getElementById('ngay').value.trim();
         const shcb = document.getElementById('shcb').value.trim();
         const chang = document.getElementById('chang').value.trim();
@@ -96,7 +99,7 @@
 
                 resultBox.className = "result-box success";
                 resultBox.innerHTML = `
-                    <p>Chuyến bay <b>QH</b><b>${data.shcb}</b> ngày ${data.ngay} (${data.chang})</p>
+                    <p>Chuyến bay <b>QH</b><b>${data.shcb} ${data.chang}</b> ngày ${data.ngay} </p>
                     <hr style="border: 0; border-top: 1px solid #ceead6; margin: 10px 0;">
                     <p>🛫 Giờ đi: <span class="time-highlight">${data.gioDi}</span></p>
                     <p>🛬 Giờ đến: <span class="time-highlight">${data.gioDen}</span></p>
